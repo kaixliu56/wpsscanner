@@ -10,7 +10,7 @@
 
 ```
 
-git clone 
+git clone https://github.com/kaixliu56/wpsscanner.git
 
 cd wpsscanner
 
