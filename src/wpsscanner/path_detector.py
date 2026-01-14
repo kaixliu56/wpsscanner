@@ -76,7 +76,8 @@ class PathDetector:
                     total=len(futures),
                     desc="Scanning",
                     ncols=80,
-                    leave=True
+                    leave=False,
+                    position=0
             ):
                 pass
 
