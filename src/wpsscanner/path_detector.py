@@ -14,6 +14,8 @@ class PathDetector:
         self.print_lock = Lock()
         self.target = target
         self.recursion_path = set()
+        self.flag_502 = False
+        self.num_502 = 0
 
     def detect_fake_404_for_scope(self, base_url, scope):
         fingerprints = []
@@ -33,39 +35,47 @@ class PathDetector:
         return fingerprints if len(fingerprints) > 2 else None
 
     def scan_one_path(self, path):
-        scope = path_scope(path)
-        state = self.scope_stats[scope]
+        if not self.flag_502:
+            scope = path_scope(path)
+            state = self.scope_stats[scope]
 
-        # ===== 基线建立（受控）=====
-        if not state["already_flag"]:
-            with state["lock"]:
-                if not state["already_flag"]:
-                    fingerprints = self.detect_fake_404_for_scope(self.target, scope)
-                    if fingerprints:
-                        state["fingerprints"] = fingerprints
-                        state["has_baseline"] = True
-                    state["already_flag"] = True
+            # ===== 基线建立（受控）=====
+            if not state["already_flag"]:
+                with state["lock"]:
+                    if not state["already_flag"]:
+                        fingerprints = self.detect_fake_404_for_scope(self.target, scope)
+                        if fingerprints:
+                            state["fingerprints"] = fingerprints
+                            state["has_baseline"] = True
+                        state["already_flag"] = True
 
-        # ===== 发请求 =====
-        url = urljoin(self.target, path)
-        code, body = fetch(url)
+            # ===== 发请求 =====
+            url = urljoin(self.target, path)
+            code, body = fetch(url)
 
-        if code in [401, 403]:
-            with self.valid_lock:
-                self.recursion_path.add(scope)
+            with self.print_lock:
+                if code >= 500 or code is None:
+                    self.num_502 += 1
+                if self.num_502 > 20:
+                    self.flag_502 = True
+                    tqdm.write(f"[*] {self.target} is not reachable")
 
-        if code == 200 and body:
-            if state["has_baseline"]:
-                if not is_fake_404(body, state["fingerprints"]):
+            if code in [401, 403]:
+                with self.valid_lock:
+                    self.recursion_path.add(scope)
+
+            if code == 200 and body:
+                if state["has_baseline"]:
+                    if not is_fake_404(body, state["fingerprints"]):
+                        with self.valid_lock:
+                            self.valid_paths.append(path)
+                            tqdm.write(urljoin(self.target, path))
+                            self.recursion_path.add(scope)
+                else:
                     with self.valid_lock:
                         self.valid_paths.append(path)
                         tqdm.write(urljoin(self.target, path))
                         self.recursion_path.add(scope)
-            else:
-                with self.valid_lock:
-                    self.valid_paths.append(path)
-                    tqdm.write(urljoin(self.target, path))
-                    self.recursion_path.add(scope)
 
     def run(self, thread_num, webpaths):
         max_workers = thread_num  # 建议 5~15 之间

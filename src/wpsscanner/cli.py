@@ -112,7 +112,7 @@ def main():
         with open(args.list, "r", encoding="utf-8") as f:
             urls = [url.strip() for url in f.readlines()]
 
-        for url in tqdm(urls, desc="All tasks progress:", total=len(urls), leave=False, position=1):
+        for url in tqdm(urls, desc="All tasks progress:", total=len(urls), leave=False, position=2):
             target = url.strip("/") + "/"
             single_target_scan(target, infos)
 
