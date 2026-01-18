@@ -54,8 +54,11 @@ class PathDetector:
             code, body = fetch(url)
 
             with self.print_lock:
-                if code >= 500 or code is None:
+                if code is None:
                     self.num_502 += 1
+                if code:
+                    if code >= 500:
+                        self.num_502 += 1
                 if self.num_502 > 20:
                     self.flag_502 = True
                     tqdm.write(f"[*] {self.target} is not reachable")
