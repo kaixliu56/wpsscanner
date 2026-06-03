@@ -10,6 +10,7 @@ class Information:
         self.recursion_flag = recursion_flag
         self.save_filename = output
         self.valid_paths = []
+        self.stop_event = Event()
 
     def print_info(self):
         print("[*] information:")
@@ -36,7 +37,10 @@ class Information:
 
 
 def single_target_scan(target, infos):
-    detector = PathDetector(target)
+    if infos.stop_event.is_set():
+        return
+
+    detector = PathDetector(target, stop_event=infos.stop_event)
     print(f"\n[*] Start scanning the target: {target}")
     result = detector.run(thread_num=infos.thread, webpaths=infos.web_path)
     valid_paths = result[0]
@@ -44,8 +48,10 @@ def single_target_scan(target, infos):
     if infos.recursion_flag:
         if recursion_paths:
             for new_target in recursion_paths:
+                if infos.stop_event.is_set():
+                    break
                 print(f"\n[*] Recursive scanning: {new_target}")
-                d = PathDetector(new_target)
+                d = PathDetector(new_target, stop_event=infos.stop_event)
                 valid_paths += d.run(thread_num=infos.thread, webpaths=infos.web_path)[0]
         infos.get_results(valid_paths=valid_paths)
     else:
@@ -100,21 +106,30 @@ def main():
     )
     infos.print_info()
 
-    if args.target:
-        target = args.target.strip("/") + "/"
-        single_target_scan(target, infos)
-
-    if args.list:
-        if not os.path.exists(args.list):
-            print("[*] Target list file does not exist!")
-            sys.exit(1)
-
-        with open(args.list, "r", encoding="utf-8") as f:
-            urls = [url.strip() for url in f.readlines()]
-
-        for url in tqdm(urls, desc="All tasks progress:", total=len(urls), leave=False, position=2):
-            target = url.strip("/") + "/"
+    try:
+        if args.target:
+            target = args.target.strip("/") + "/"
             single_target_scan(target, infos)
+
+        if args.list:
+            if not os.path.exists(args.list):
+                print("[*] Target list file does not exist!")
+                sys.exit(1)
+
+            with open(args.list, "r", encoding="utf-8") as f:
+                urls = [url.strip() for url in f.readlines()]
+
+            for url in tqdm(urls, desc="All tasks progress:", total=len(urls), leave=False, position=2):
+                if infos.stop_event.is_set():
+                    break
+                target = url.strip("/") + "/"
+                single_target_scan(target, infos)
+    except KeyboardInterrupt:
+        infos.stop_event.set()
+        print("\n[*] Ctrl+C detected, stopping scan...")
+
+    if infos.stop_event.is_set():
+        print("[*] Scan stopped by user.")
 
     infos.output_results()
 

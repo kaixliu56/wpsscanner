@@ -5,7 +5,7 @@ from difflib import SequenceMatcher
 import requests
 from urllib.parse import urljoin
 from collections import defaultdict
-from threading import Lock
+from threading import Lock, Event
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib3 import disable_warnings
 from tqdm import tqdm
