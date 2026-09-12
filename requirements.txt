@@ -1,6 +1,1 @@
-requests
-urllib3
-tqdm
-pyfiglet
-setuptools
-.
+-e .

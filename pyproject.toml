@@ -1,3 +1,35 @@
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "wpsscanner"
+version = "0.2.0"
+description = "Web path scanner with scoped soft-404 detection"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [{name = "kaixliu56"}]
+dependencies = [
+    "requests>=2.31,<3",
+    "tqdm>=4.66,<5",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<9", "ruff>=0.9,<1"]
+
+[project.scripts]
+wpsscanner = "wpsscanner.cli:main"
+
+[project.urls]
+Repository = "https://github.com/kaixliu56/wpsscanner"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 110
+target-version = "py39"
