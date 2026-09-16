@@ -1,13 +1,2 @@
-# Lower bounds are the oldest releases verified to actually run, not arbitrary
-# minimums. No upper bounds, so a newer installed version never causes a
-# resolver conflict.
-#
-# requests  2.25.1 is the first release that allows urllib3 >= 1.26. Older
-#           requests pin urllib3 to 1.2x, whose six.moves lazy imports no longer
-#           resolve on Python 3.12+ - they install fine but fail on import.
-#           2.25.1 also covers the Response context manager used by
-#           ScannerHttpClient.fetch().
-# tqdm      4.24.0 is where tqdm.write() combined with an explicit position=
-#           became reliable.
-requests>=2.25.1
-tqdm>=4.24.0
+requests
+tqdm
