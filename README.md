@@ -20,18 +20,21 @@ scope to one request for scopes that behave like the root, or three requests for
 
 ## Installation
 
+The project is not installed as a package. Dependencies are listed in
+`requirements.txt` and the scanner is started through the `wps.py` entry file.
+
 ```bash
 git clone https://github.com/kaixliu56/wpsscanner.git
 cd wpsscanner
 python -m venv .venv
 . .venv/bin/activate
-pip install -e .
+pip install -r requirements.txt
 ```
 
 For development:
 
 ```bash
-pip install -e '.[dev]'
+pip install -r requirements-dev.txt
 pytest
 ruff check .
 ```
@@ -39,13 +42,13 @@ ruff check .
 ## Usage
 
 ```bash
-wpsscanner -u https://example.com -w paths.txt
+python wps.py -u https://example.com -w paths.txt
 ```
 
 Useful options:
 
 ```bash
-wpsscanner \
+python wps.py \
   -u https://example.com \
   -w paths.txt \
   -t 20 \
@@ -62,16 +65,16 @@ Additional modes:
 
 ```bash
 # Multiple targets
-wpsscanner -l targets.txt -w paths.txt
+python wps.py -l targets.txt -w paths.txt
 
 # One recursion level
-wpsscanner -u https://example.com -w paths.txt --recursion
+python wps.py -u https://example.com -w paths.txt --recursion
 
 # Follow redirects or ignore TLS certificate errors explicitly
-wpsscanner -u https://example.com -w paths.txt --follow-redirects --insecure
+python wps.py -u https://example.com -w paths.txt --follow-redirects --insecure
 
 # Tune soft-404 detection
-wpsscanner -u https://example.com -w paths.txt \
+python wps.py -u https://example.com -w paths.txt \
   --baseline-samples 3 \
   --baseline-consistency 0.72 \
   --soft404-threshold 0.82 \
