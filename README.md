@@ -31,14 +31,6 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-For development:
-
-```bash
-pip install -r requirements-dev.txt
-pytest
-ruff check .
-```
-
 ## Usage
 
 ```bash
